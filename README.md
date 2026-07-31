@@ -72,7 +72,6 @@ CREATE TABLE Cobro (
     FOREIGN KEY (idRegistro) REFERENCES Registro(idRegistro)
 );
 ```
-   > **Nota:** el script `script/UnoAMuchos.sql` incluido en el repositorio pertenece a un ejercicio distinto (una relación uno a muchos con tablas `TipoProducto`/`Productos`) y no corresponde a la base de datos `Parqueadero` que usa esta aplicación. Debes crear las tablas `Vehiculo`, `Registro` y `Cobro` manualmente con el script de arriba (o uno equivalente) antes de ejecutar el proyecto.
 
 3. Revisar la configuración de conexión en `src/mundo/MySql.java` (usuario `root`, sin contraseña, `localhost:3306`) y ajustarla si tu instalación de XAMPP usa credenciales distintas.
 
@@ -109,18 +108,10 @@ ModeloDatos-ParqueaderoDB/
 - **CRUD sobre un modelo relacional:** cada operación del panel (Create, Read, Update, Delete) arma una sentencia SQL como texto y la envía a través del controlador, ilustrando cómo una interfaz gráfica se traduce en operaciones sobre tablas relacionadas por llaves foráneas (`Vehiculo` → `Registro` → `Cobro`).
 - **Integridad referencial:** al eliminar un vehículo, la aplicación borra primero los `Cobro`, luego los `Registro` y finalmente el `Vehiculo`, respetando el orden que exigen las llaves foráneas para no violar restricciones de integridad.
 
-### Conceptos nuevos usados en este proyecto
-
-- **API de fecha y hora de Java (`java.time`):** el proyecto usa `LocalDate`, `LocalTime`, `Duration` y `DateTimeFormatter` para registrar la hora de entrada/salida y calcular cuánto tiempo estuvo parqueado un vehículo. `LocalTime.now()` captura la hora actual, `DateTimeFormatter` la convierte a un formato de texto (`HH:mm:ss`) para guardarla en la base de datos, y `Duration.between(...)` calcula la diferencia entre dos horas para obtener los minutos a cobrar.
-- **Expresiones lambda como manejadores de eventos:** en vez de crear una clase que implemente `ActionListener`, el código usa una expresión lambda (`boton2.addActionListener(e -> { ... })`). Esto es posible porque `ActionListener` es una interfaz funcional (tiene un solo método abstracto), y Java permite reemplazar la implementación completa de esa interfaz por una lambda, haciendo el código más corto.
-
-## 7. Limitaciones Conocidas
-
-- El script SQL incluido (`script/UnoAMuchos.sql`) no corresponde a las tablas reales que usa la aplicación (`Vehiculo`, `Registro`, `Cobro`); hay que crearlas manualmente.
-- Las credenciales de conexión (usuario `root`, sin contraseña) y la URL (`localhost:3306`) están escritas directamente en el código (`MySql.java`), por lo que el proyecto solo funciona "tal cual" en un entorno local con esa configuración.
-- Las consultas SQL se arman concatenando texto (por ejemplo `"WHERE placa = '" + placa + "'"`), en vez de usar `PreparedStatement`. Esto es útil para el propósito académico del ejercicio, pero en un proyecto real expondría la aplicación a inyección SQL.
-- La tarifa de cobro (100 por minuto) está fija en el código (`PanelVehicule.java`), no es configurable desde la interfaz.
-
 ## 8. Autor
 
-**Juan Diego Galindo** — [github.com/juandiegogalindo](https://github.com/juandiegogalindo)
+**Juan Diego Galindo**
+Estudiante de Ingeniería de Sistemas - Sexto Semestre
+ 
+- GitHub: [@juandiegogalindo](https://github.com/juandiegogalindo)
+- LinkedIn: [Juan Diego Galindo - Full Stack](https://linkedin.com/in/jdgalindo6)
