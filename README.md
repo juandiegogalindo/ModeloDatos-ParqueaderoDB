@@ -108,6 +108,9 @@ ModeloDatos-ParqueaderoDB/
 - **CRUD sobre un modelo relacional:** cada operación del panel (Create, Read, Update, Delete) arma una sentencia SQL como texto y la envía a través del controlador, ilustrando cómo una interfaz gráfica se traduce en operaciones sobre tablas relacionadas por llaves foráneas (`Vehiculo` → `Registro` → `Cobro`).
 - **Integridad referencial:** al eliminar un vehículo, la aplicación borra primero los `Cobro`, luego los `Registro` y finalmente el `Vehiculo`, respetando el orden que exigen las llaves foráneas para no violar restricciones de integridad.
 
+## 7 Imagen de Referencia:
+<img width="865" height="874" alt="image" src="https://github.com/user-attachments/assets/d735a3c2-bac9-4263-b0a6-a7febd48dad0" />
+
 ## 8. Autor
 
 **Juan Diego Galindo**
