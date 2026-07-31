@@ -1,77 +1,126 @@
-# EjercicioBaseDatos - Parqueadero
+# ModeloDatos-ParqueaderoDB
 
 ## 1. Nombre del Proyecto
 
-**EjercicioBaseDatos - Parqueadero**
+**ModeloDatos-ParqueaderoDB**
 
-Proyecto académico desarrollado en **Java** que implementa una aplicación de gestión de un parqueadero apoyada en una base de datos relacional (por ejemplo MySQL), con el objetivo de registrar y administrar la entrada y salida de vehículos, así como los datos asociados. :contentReference[oaicite:0]{index=0}
+Aplicación de escritorio en Java (Swing) que simula el sistema CRUD de un parqueadero: cuando un vehículo llega se registra su placa, propietario y teléfono; al momento de la entrada se crea un registro con hora de ingreso, y al salir se liquida el cobro calculado según el tiempo parqueado. El proyecto tuvo como objetivo aplicar en un contexto real el proceso CRUD (Crear, Leer, Actualizar, Eliminar) sobre una base de datos relacional, usando MySQL sobre un servidor local (XAMPP).
 
 ## 2. Características
 
-Este proyecto incluye:
+- Registro de vehículos (placa, propietario, teléfono) con validación de campos vacíos.
+- Registro de entrada de vehículos, evitando duplicar el ingreso de un vehículo ya parqueado.
+- Liquidación de salida: calcula automáticamente los minutos parqueados y el valor a pagar (tarifa fija por minuto), y actualiza el estado del registro a "salido".
+- Actualización de datos del propietario y teléfono de un vehículo ya registrado.
+- Eliminación de un vehículo junto con sus registros de entrada/salida y cobros asociados (elimina primero las tablas dependientes para respetar las llaves foráneas).
+- Panel de consola en la interfaz que muestra mensajes de estado de cada operación (creado, actualizado, eliminado, errores, etc.).
+- Conexión a base de datos MySQL mediante JDBC, con métodos genéricos de `SELECT` y `UPDATE`/`INSERT`/`DELETE` centralizados en una clase de acceso a datos.
 
-- Integración de una aplicación en Java con una **base de datos relacional** para persistencia de información.
-- Diagramas y scripts de base de datos para la creación de tablas y relaciones necesarias para gestionar el parqueadero.
-- Implementación de operaciones de **CRUD** para registrar vehículos, clientes, entradas, salidas y otros datos pertinentes.
-- Uso de JDBC u otro mecanismo de conexión para interactuar con la base de datos desde Java.
-- Enfoque educativo que fortalece la comprensión de conceptos de bases de datos, normalización y programación orientada a datos. :contentReference[oaicite:1]{index=1}
+## 3. Tecnologías Utilizadas
 
-## 3. Instalación
+1. **Java 20** — Lenguaje principal de la aplicación.
+2. **Swing** — Interfaz gráfica de escritorio (paneles, botones, campos de texto).
+3. **JDBC** — Conexión y ejecución de consultas SQL desde Java.
+4. **MySQL** (driver `mysql-connector-java 5.1.23`) — Motor de base de datos relacional.
+5. **XAMPP** — Servidor local para levantar MySQL/phpMyAdmin en el entorno de desarrollo.
+6. **NetBeans + Apache Ant** — IDE y sistema de construcción del proyecto.
+
+## 4. Instalación
 
 ### Requisitos Previos
 
-1. **Java JDK 8 o superior** instalado en el sistema.
-2. **MySQL** u otro servidor de base de datos relacional instalado.
-3. **Git** para clonar el repositorio.
-4. IDE recomendado: **NetBeans**, **Eclipse** o **IntelliJ IDEA**.
-5. Configurar usuario y contraseña de la base de datos.
+1. **Java JDK 20** instalado.
+2. **XAMPP** (o cualquier servidor MySQL) con el módulo de MySQL activo.
+3. **NetBeans** (recomendado, ya que el proyecto trae su configuración de Ant/NetBeans lista para abrir).
+4. **Git** para clonar el repositorio.
 
 ### Pasos de Instalación
 
 1. Clonar el repositorio:
 ```bash
-git clone https://github.com/juandiegogalindo/EjercicioBaseDatos-Parqueadero.git
+git clone https://github.com/juandiegogalindo/ModeloDatos-ParqueaderoDB.git
 ```
 
-2. Crear la base de datos en tu servidor (por ejemplo, en MySQL):
-```bash
-CREATE DATABASE parqueadero;
-USE parqueadero;
--- ejecutar scripts de creación de tablas incluidos en el repositorio
+2. Crear la base de datos `Parqueadero` en MySQL con las tablas que usa la aplicación:
+```sql
+CREATE DATABASE Parqueadero;
+USE Parqueadero;
+
+CREATE TABLE Vehiculo (
+    placa VARCHAR(10) PRIMARY KEY,
+    propietario VARCHAR(100),
+    telefono VARCHAR(20)
+);
+
+CREATE TABLE Registro (
+    idRegistro INT AUTO_INCREMENT PRIMARY KEY,
+    placa VARCHAR(10),
+    fecha DATE,
+    horaEntrada VARCHAR(10),
+    horaSalida VARCHAR(10),
+    estado VARCHAR(20),
+    FOREIGN KEY (placa) REFERENCES Vehiculo(placa)
+);
+
+CREATE TABLE Cobro (
+    idCobro INT AUTO_INCREMENT PRIMARY KEY,
+    idRegistro INT,
+    minutosTotales INT,
+    valorCalculado FLOAT,
+    valorFinal FLOAT,
+    fechaCobro DATE,
+    FOREIGN KEY (idRegistro) REFERENCES Registro(idRegistro)
+);
+```
+   > **Nota:** el script `script/UnoAMuchos.sql` incluido en el repositorio pertenece a un ejercicio distinto (una relación uno a muchos con tablas `TipoProducto`/`Productos`) y no corresponde a la base de datos `Parqueadero` que usa esta aplicación. Debes crear las tablas `Vehiculo`, `Registro` y `Cobro` manualmente con el script de arriba (o uno equivalente) antes de ejecutar el proyecto.
+
+3. Revisar la configuración de conexión en `src/mundo/MySql.java` (usuario `root`, sin contraseña, `localhost:3306`) y ajustarla si tu instalación de XAMPP usa credenciales distintas.
+
+4. Abrir el proyecto en NetBeans (usa Ant, así que también puede compilarse con `ant build` desde la raíz del proyecto).
+
+5. Ejecutar la clase principal `interfaz.InterfazApp`.
+
+## 5. Estructura del Proyecto
+
+```
+ModeloDatos-ParqueaderoDB/
+├── driver/
+│   └── mysql-connector-java-5.1.23-bin.jar   # Driver JDBC de MySQL
+├── script/
+│   └── UnoAMuchos.sql                        # Script de otro ejercicio (no usado por esta app)
+├── src/
+│   ├── controlador/
+│   │   └── Controlador.java                  # Intermediario entre la interfaz y el acceso a datos
+│   ├── interfaz/
+│   │   ├── InterfazApp.java                  # Ventana principal (JFrame) y punto de entrada (main)
+│   │   ├── PanelCrud.java                    # Selector de operación (Create/Read/Update/Delete)
+│   │   ├── PanelConsole.java                 # Consola de mensajes de estado
+│   │   └── PanelVehicule.java                # Formulario y lógica CRUD del vehículo
+│   └── mundo/
+│       └── MySql.java                        # Conexión JDBC y ejecución de sentencias SQL
+├── build.xml                                  # Script de construcción con Apache Ant
+└── manifest.mf
 ```
 
-3. Configurar las credenciales de conexión en el código Java (URL, usuario, contraseña).
+## 6. Fundamento Teórico
 
-4. Abrir el proyecto en tu IDE.
+- **Arquitectura por capas:** el proyecto separa la interfaz (`interfaz`), el controlador (`controlador`) y el acceso a datos (`mundo`), de forma que `PanelVehicule` nunca habla directo con JDBC, sino a través de `Controlador`, que a su vez delega en `MySql`.
+- **JDBC (Java Database Connectivity):** `MySql.java` usa `DriverManager.getConnection(...)` para abrir la conexión y `Statement` para ejecutar tanto consultas (`executeQuery`, en el método `select`) como sentencias de modificación (`executeUpdate`, en el método `update`), que es el mecanismo estándar de Java para hablar con una base de datos relacional.
+- **CRUD sobre un modelo relacional:** cada operación del panel (Create, Read, Update, Delete) arma una sentencia SQL como texto y la envía a través del controlador, ilustrando cómo una interfaz gráfica se traduce en operaciones sobre tablas relacionadas por llaves foráneas (`Vehiculo` → `Registro` → `Cobro`).
+- **Integridad referencial:** al eliminar un vehículo, la aplicación borra primero los `Cobro`, luego los `Registro` y finalmente el `Vehiculo`, respetando el orden que exigen las llaves foráneas para no violar restricciones de integridad.
 
-5. Compilar y ejecutar la aplicación desde el IDE o mediante herramienta de construcción si aplica.
+### Conceptos nuevos usados en este proyecto
 
-## 4. Tecnologías Utilizadas
+- **API de fecha y hora de Java (`java.time`):** el proyecto usa `LocalDate`, `LocalTime`, `Duration` y `DateTimeFormatter` para registrar la hora de entrada/salida y calcular cuánto tiempo estuvo parqueado un vehículo. `LocalTime.now()` captura la hora actual, `DateTimeFormatter` la convierte a un formato de texto (`HH:mm:ss`) para guardarla en la base de datos, y `Duration.between(...)` calcula la diferencia entre dos horas para obtener los minutos a cobrar.
+- **Expresiones lambda como manejadores de eventos:** en vez de crear una clase que implemente `ActionListener`, el código usa una expresión lambda (`boton2.addActionListener(e -> { ... })`). Esto es posible porque `ActionListener` es una interfaz funcional (tiene un solo método abstracto), y Java permite reemplazar la implementación completa de esa interfaz por una lambda, haciendo el código más corto.
 
-1. Java — Lenguaje de programación principal para la lógica de la aplicación.
-2. MySQL u otro gestor de base de datos relacional — Para persistencia de datos y consultas.
-3. JDBC — API estándar para conectar Java con bases de datos.
-4. Git / GitHub — Control de versiones y hospedaje del repositorio.
-5. IDE Java — Entorno de desarrollo recomendado (NetBeans, IntelliJ, Eclipse).
+## 7. Limitaciones Conocidas
 
-## 5. Teoría del Juego en Base a la Programación
+- El script SQL incluido (`script/UnoAMuchos.sql`) no corresponde a las tablas reales que usa la aplicación (`Vehiculo`, `Registro`, `Cobro`); hay que crearlas manualmente.
+- Las credenciales de conexión (usuario `root`, sin contraseña) y la URL (`localhost:3306`) están escritas directamente en el código (`MySql.java`), por lo que el proyecto solo funciona "tal cual" en un entorno local con esa configuración.
+- Las consultas SQL se arman concatenando texto (por ejemplo `"WHERE placa = '" + placa + "'"`), en vez de usar `PreparedStatement`. Esto es útil para el propósito académico del ejercicio, pero en un proyecto real expondría la aplicación a inyección SQL.
+- La tarifa de cobro (100 por minuto) está fija en el código (`PanelVehicule.java`), no es configurable desde la interfaz.
 
-Un sistema de gestión de parqueadero con base de datos implica la interacción entre una aplicación y un modelo de datos estructurado, lo cual es un problema clásico en el desarrollo de software empresarial y académico.
+## 8. Autor
 
-Fundamentos Conceptuales
-
-1. Modelo Relacional de Datos:
-  - La base de datos se organiza en tablas, cada una representando entidades como vehículos, clientes, registros de entrada/salida y demás.
-  - Cada tabla contiene atributos organizados en columnas y filas, y se establecen relaciones mediante claves primarias y foráneas para mantener integridad referencial.
-2. Normalización:
-  - Para evitar redundancia y asegurar consistencia de datos, se aplican principios de normalización que estructuran la base de datos en formas normales (1FN, 2FN, 3FN, etc.).
-3. Conexión desde Java con JDBC:
-  - La aplicación Java utiliza JDBC (Java Database Connectivity) para establecer una conexión con la base de datos, enviar consultas SQL y procesar resultados.
-  - Operaciones CRUD (Crear, Leer, Actualizar, Eliminar) se traducen a consultas SQL ejecutadas desde Java.
-5. Integración entre Aplicación y Base de Datos:
-  - La lógica de negocio en Java encapsula operaciones de acceso a datos, validación, gestión de errores y presentación de resultados, generando una arquitectura orientada a datos necesaria para un sistema de información real.
-
-Este ejercicio permite consolidar conocimientos de programación orientada a datos, diseño de bases de datos y arquitectura cliente-servidor básica, competencias esenciales en ingeniería de software.
-
-## 6 Imagen de Referencia:
-<img width="865" height="874" alt="image" src="https://github.com/user-attachments/assets/d735a3c2-bac9-4263-b0a6-a7febd48dad0" />
+**Juan Diego Galindo** — [github.com/juandiegogalindo](https://github.com/juandiegogalindo)
